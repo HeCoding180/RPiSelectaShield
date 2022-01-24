@@ -12,6 +12,7 @@ class SelectaPi:
         self.SlotNames = DrinkNames
 
         self.__MotValues = [0, 0, 0, 0, 0, 0]
+        self.__LEDValues = [0, 0, 0, 0, 0, 0]
         
         self.FULL = True
         self.EMPTY = False
@@ -53,7 +54,6 @@ class SelectaPi:
             GPIO.setup(DataPin, DataDirection, initial = GPIO.LOW)
    
     def readData(self):
-        self.__setDataDir(GPIO.IN)
         Data = []
         for Bit in range(6):
             Data[Bit] = GPIO.input(list(DataBus)[Bit])
@@ -83,14 +83,9 @@ class SelectaPi:
     def checkSlotLevels(self):
         return self.readButtons(self.LEVEL_BUTTON)
     
-    def checkSlotLevel(self, Slot):
-        SlotNumber = -1
-        if str(type(Slot)) == "<class 'str'>":
-            SlotNumber = self.getSlotNumber(Slot)
-        else:
-            SlotNumber = Slot
-        if (str(type(Slot)) == "<class 'int'>") and ((SlotNumber >= 1) and (SlotNumber <= 6)):
-            return self.checkSlotLevels()[(Slot - 1)]
+    def checkSlotLevel(self, SlotNumber):
+        if ((SlotNumber >= 1) and (SlotNumber <= 6)):
+            return self.checkSlotLevels()[(SlotNumber - 1)]
         else:
             return -1
     
@@ -111,9 +106,11 @@ class SelectaPi:
         
         if (str(type(LEDValues)) == "<class 'tuple'>"):
             LEDValues = list(LEDValues)
+
+        self.__LEDValues = LEDValues
         
         for Bit in range(6):
-            GPIO.output(list(DataBus)[Bit], LEDValues[Bit])
+            GPIO.output(list(DataBus)[Bit], self.__LEDValues[Bit])
         
         GPIO.output(LED_WRITE, GPIO.HIGH)
         time.sleep(0.001)
@@ -127,15 +124,19 @@ class SelectaPi:
     
     def setLED(self, LEDValue, LEDNum):
         self.__setDataDir(GPIO.OUT)
+
+        self.__LEDValues[LEDNum - 1] = LEDValue
         
-        GPIO.output(list(DataBus)[(LEDNum - 1)], LEDValue)
+        for Bit in range(6):
+            GPIO.output(list(DataBus)[Bit], self.__LEDValues[Bit])
         
         GPIO.output(LED_WRITE, GPIO.HIGH)
         time.sleep(0.001)
         GPIO.output(LED_WRITE, GPIO.LOW)
         time.sleep(0.001)
         
-        GPIO.output(list(DataBus)[(LEDNum - 1)], GPIO.LOW)
+        for Bit in range(6):
+            GPIO.output(list(DataBus)[Bit], GPIO.LOW)
         
         self.__setDataDir(GPIO.IN)
     
@@ -173,7 +174,8 @@ class SelectaPi:
         GPIO.output(MOT_WRITE, GPIO.LOW)
         time.sleep(0.001)
         
-        GPIO.output(list(DataBus)[(MotorNum - 1)], GPIO.LOW)
+        for Bit in range(6):
+            GPIO.output(list(DataBus)[Bit], GPIO.LOW)
         
         self.__setDataDir(GPIO.IN)
     
