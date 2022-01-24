@@ -177,7 +177,7 @@ class SelectaPi:
         
         self.__setDataDir(GPIO.IN)
     
-    def ExecuteMotorCycles(self, Cycles, MotorNum):
+    def executeMotorCycles(self, Cycles, MotorNum):
         for cycleNum in range(Cycles):
             self.setMotor(GPIO.HIGH, MotorNum)
             time.sleep(0.01)
