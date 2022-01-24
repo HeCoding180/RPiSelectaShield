@@ -11,7 +11,7 @@ class SelectaPi:
     def __init__(self, HomeAllMotors=True, DrinkNames=("", "", "", "", "", "")):
         self.SlotNames = DrinkNames
 
-        self.MotValues = [0, 0, 0, 0, 0, 0]
+        self.__MotValues = [0, 0, 0, 0, 0, 0]
         
         self.FULL = True
         self.EMPTY = False
@@ -25,7 +25,7 @@ class SelectaPi:
         
         GPIO.setmode(GPIO.BCM)
         
-        self.setDataDir(GPIO.IN)
+        self.__setDataDir(GPIO.IN)
         for EnablePin in (nX1EN, nX2EN, nX3EN):
             GPIO.setup(EnablePin, GPIO.OUT, initial = GPIO.HIGH)
         for WritePin in (LED_WRITE, MOT_WRITE):
@@ -48,12 +48,12 @@ class SelectaPi:
                     self.setMotor(GPIO.HIGH, MotorNum)
                 time.sleep(1)
     
-    def setDataDir(self, DataDirection): #USE OF THIS FUNCTION AT YOUR OWN RISK
+    def __setDataDir(self, DataDirection): #USE OF THIS FUNCTION AT YOUR OWN RISK
         for DataPin in DataBus:
             GPIO.setup(DataPin, DataDirection, initial = GPIO.LOW)
    
     def readData(self):
-        self.setDataDir(GPIO.IN)
+        self.__setDataDir(GPIO.IN)
         Data = []
         for Bit in range(6):
             Data[Bit] = GPIO.input(list(DataBus)[Bit])
@@ -107,7 +107,7 @@ class SelectaPi:
         return self.readButtons(SwitchFunction)[(ButtonNum - 1)]
     
     def setLEDs(self, LEDValues):
-        self.setDataDir(GPIO.OUT)
+        self.__setDataDir(GPIO.OUT)
         
         if (str(type(LEDValues)) == "<class 'tuple'>"):
             LEDValues = list(LEDValues)
@@ -123,10 +123,10 @@ class SelectaPi:
         for Bit in range(6):
             GPIO.output(list(DataBus)[Bit], GPIO.LOW)
         
-        self.setDataDir(GPIO.IN)
+        self.__setDataDir(GPIO.IN)
     
     def setLED(self, LEDValue, LEDNum):
-        self.setDataDir(GPIO.OUT)
+        self.__setDataDir(GPIO.OUT)
         
         GPIO.output(list(DataBus)[(LEDNum - 1)], LEDValue)
         
@@ -137,18 +137,18 @@ class SelectaPi:
         
         GPIO.output(list(DataBus)[(LEDNum - 1)], GPIO.LOW)
         
-        self.setDataDir(GPIO.IN)
+        self.__setDataDir(GPIO.IN)
     
     def setMotors(self, MotorValues):
-        self.setDataDir(GPIO.OUT)
+        self.__setDataDir(GPIO.OUT)
         
         if (str(type(MotorValues)) == "<class 'tuple'>"):
             MotorValues = list(MotorValues)
         
-        self.MotValues = MotorValues
+        self.__MotValues = MotorValues
 
         for Bit in range(6):
-            GPIO.output(list(DataBus)[Bit], self.MotValues[Bit])
+            GPIO.output(list(DataBus)[Bit], self.__MotValues[Bit])
         
         GPIO.output(MOT_WRITE, GPIO.HIGH)
         time.sleep(0.001)
@@ -158,14 +158,15 @@ class SelectaPi:
         for Bit in range(6):
             GPIO.output(list(DataBus)[Bit], GPIO.LOW)
         
-        self.setDataDir(GPIO.IN)
+        self.__setDataDir(GPIO.IN)
     
     def setMotor(self, MotorValue, MotorNum):
-        self.setDataDir(GPIO.OUT)
+        self.__setDataDir(GPIO.OUT)
 
-        self.MotValues[MotorNum - 1] = MotorValue
+        self.__MotValues[MotorNum - 1] = MotorValue
         
-        GPIO.output(list(DataBus)[(MotorNum - 1)], MotorValue)
+        for Bit in range(6):
+            GPIO.output(list(DataBus)[Bit], self.__MotValues[Bit])
         
         GPIO.output(MOT_WRITE, GPIO.HIGH)
         time.sleep(0.001)
@@ -174,7 +175,7 @@ class SelectaPi:
         
         GPIO.output(list(DataBus)[(MotorNum - 1)], GPIO.LOW)
         
-        self.setDataDir(GPIO.IN)
+        self.__setDataDir(GPIO.IN)
     
     def ExecuteMotorCycles(self, Cycles, MotorNum):
         for cycleNum in range(Cycles):
