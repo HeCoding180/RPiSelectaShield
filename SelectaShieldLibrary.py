@@ -13,6 +13,8 @@ class SelectaPi:
 
         self.__MotValues = [0, 0, 0, 0, 0, 0]
         self.__LEDValues = [0, 0, 0, 0, 0, 0]
+
+        self.__MAX_MOTOR_COUNT = 1;
         
         self.FULL = True
         self.EMPTY = False
@@ -38,6 +40,8 @@ class SelectaPi:
         #Turn off all Motors
         self.setMotors((0, 0, 0, 0, 0, 0))
         
+        time.sleep(1)
+        
         if (HomeAllMotors == True):
             for MotorNum in range(6):
                 if(self.readButton(self.ENCODER_BUTTON, MotorNum) == GPIO.HIGH):
@@ -45,9 +49,10 @@ class SelectaPi:
                     time.sleep(0.1)
                     
                     while(self.readButton(self.ENCODER_BUTTON, MotorNum) == GPIO.HIGH):
+                        print("Homing Motor n: " + str(MotorNum))
                         time.sleep(0.1)
                     
-                    self.setMotor(GPIO.HIGH, MotorNum)
+                    self.setMotor(GPIO.LOW, MotorNum)
                 time.sleep(1)
             print("Homing Motors Completed")
     def __setDataDir(self, DataDirection): #USE OF THIS FUNCTION AT YOUR OWN RISK
@@ -148,27 +153,33 @@ class SelectaPi:
         self.__setDataDir(GPIO.IN)
     
     def setMotors(self, MotorValues):
-        self.__setDataDir(GPIO.OUT)
-        
         if (str(type(MotorValues)) == "<class 'tuple'>"):
             MotorValues = list(MotorValues)
         
         self.__MotValues = MotorValues
 
-        for Bit in range(6):
-            GPIO.output(DataBus[Bit], self.__MotValues[Bit])
-        
-        GPIO.output(MOT_WRITE, GPIO.HIGH)
-        time.sleep(0.1)
-        GPIO.output(MOT_WRITE, GPIO.LOW)
-        time.sleep(0.1)
-        
-        for Bit in range(6):
-            GPIO.output(DataBus[5 - Bit], GPIO.LOW)
-        
-        self.__setDataDir(GPIO.IN)
+        listSum = 0
+        for i in range(6):
+            listSum += MotorValues[i]
+        if(listSum <= self.__MAX_MOTOR_COUNT): 
+            self.__setDataDir(GPIO.OUT)
+
+            for Bit in range(6):
+                GPIO.output(DataBus[Bit], self.__MotValues[Bit])
+            
+            GPIO.output(MOT_WRITE, GPIO.HIGH)
+            time.sleep(0.1)
+            GPIO.output(MOT_WRITE, GPIO.LOW)
+            time.sleep(0.1)
+            
+            for Bit in range(6):
+                GPIO.output(DataBus[5 - Bit], GPIO.LOW)
+            
+            self.__setDataDir(GPIO.IN)
     
     def setMotor(self, MotorValue, MotorNum):
+        self.setMotors((0, 0, 0, 0, 0, 0))
+        
         self.__setDataDir(GPIO.OUT)
 
         self.__MotValues[MotorNum - 1] = MotorValue
@@ -189,7 +200,7 @@ class SelectaPi:
     def executeMotorCycles(self, Cycles, MotorNum):
         for cycleNum in range(Cycles):
             self.setMotor(GPIO.HIGH, MotorNum)
-            time.sleep(0.1)
+            time.sleep(1)
             
             while(self.readButton(self.ENCODER_BUTTON, MotorNum) == GPIO.HIGH):
                 time.sleep(0.1)
