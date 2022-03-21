@@ -176,6 +176,8 @@ class SelectaPi:
                 GPIO.output(DataBus[5 - Bit], GPIO.LOW)
             
             self.__setDataDir(GPIO.IN)
+        else:
+            print("too many motors turned on at the same time. no action performed")
     
     def setMotor(self, MotorValue, MotorNum):
         self.setMotors((0, 0, 0, 0, 0, 0))
