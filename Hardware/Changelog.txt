@@ -1,0 +1,15 @@
+******************************************
+ --- Selecta Pi Shield Changelog ---
+
+     Version: v1.1
+     Author: Timo Wiedmer
+     Date: 18.01.2022
+******************************************
+
+Fixed Issues:
+ - Short circuit hazard of the tri-state input multiplexer while the Raspberry Pi is booting was removed
+ - Inverted output enable of the output multiplexing D-FlipFlops was set to high permanently. Now it is permanently set to low
+ - The two GND pins on X5 are now connected to 5V instead
+
+Changes:
+ - The Motors' grounds aren't connected to the PCB's GND any more
